@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"git-diff-parser/pkg/model"
+	"github/codepawfect/git-diff-parser/pkg/model"
 	"reflect"
 	"testing"
 )

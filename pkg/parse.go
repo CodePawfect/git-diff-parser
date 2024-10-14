@@ -2,7 +2,7 @@ package parse
 
 import (
 	"bufio"
-	"git-diff-parser/pkg/model"
+	"github/codepawfect/git-diff-parser/pkg/model"
 	"regexp"
 	"strconv"
 	"strings"
