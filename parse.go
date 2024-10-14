@@ -16,6 +16,7 @@ const (
 	MODIFY = "modify"
 )
 
+// GitDiff contains all file differences between source and target branch
 type GitDiff struct {
 	FileDiffs []FileDiff
 }
@@ -120,6 +121,7 @@ func extractNewFilename(str string) string {
 	return str[i : j+i]
 }
 
+// hunkHeaderRegex matches hunk header @@ <number>,<number> <number>,<number> @@
 var hunkHeaderRegex = regexp.MustCompile(`(?m)^\s*@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
 
 // extractHunks extracts hunks from the diff --git string.
