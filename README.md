@@ -7,17 +7,17 @@ Demonstration how a `GitDiff` struct might look after parsing a git diff.
 ### Input: Git Diff
 
 ```
-diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+diff --git a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 index 50e23fd0..2b304ea7 100644
---- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
-+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+--- a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
++++ b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 @@ -10,6 +10,7 @@ import lombok.Data;
  @Data
  @Builder
  public class GoodsReceiptDto {
 +  private Long goodsReceiptId;
    private String internalOrderNumber;
-   private String eonOrderNumber;
+   private String OrderNumber;
    private String deliveryNoteNumber;
 @@ -26,6 +27,7 @@ public class GoodsReceiptDto {
     */
@@ -25,19 +25,19 @@ index 50e23fd0..2b304ea7 100644
      return GoodsReceiptDto.builder()
 +        .goodsReceiptId(goodsReceipt.getId())
          .internalOrderNumber(goodsReceipt.getInternalOrderNumber())
-         .eonOrderNumber(goodsReceipt.getEonOrderNumber())
+         .OrderNumber(goodsReceipt.getOrderNumber())
          .deliveryNoteNumber(goodsReceipt.getDeliveryNoteNumber())
-diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
+diff --git a/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java b/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
 index 13ef59a7..d0c03386 100644
---- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
-+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
+--- a/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
++++ b/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
 @@ -45,10 +45,8 @@ public class GoodsReceiptPersistenceAdapter implements GoodsReceiptPersistencePo
    }
  
    @Override
--  public Mono<GoodsReceipt> getByEonOrderNumber(String eonOrderNumber) {
+-  public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {
 -    return goodsReceiptRepository
--        .findByEonOrderNumber(eonOrderNumber)
+-        .findByOrderNumber(OrderNumber)
 -        .map(GoodsReceiptEntity::mapToDomain);
 +  public Mono<GoodsReceipt> getByGoodsReceiptId(Long goodsReceiptId) {
 +    return goodsReceiptRepository.findById(goodsReceiptId).map(GoodsReceiptEntity::mapToDomain);
@@ -50,8 +50,8 @@ index 13ef59a7..d0c03386 100644
 model.GitDiff{
     FileDiffs: []model.FileDiff{
         {
-            OldFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
-            NewFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
+            OldFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
+            NewFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
             Hunks: []model.Hunk{
                 {
                     HunkOperation:    model.ADD,
@@ -82,8 +82,8 @@ model.GitDiff{
             },
         },
         {
-            OldFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
-            NewFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
+            OldFilename: "src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
+            NewFilename: "src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
             Hunks: []model.Hunk{
                 {
                     HunkOperation:    model.MODIFY,
@@ -93,7 +93,7 @@ model.GitDiff{
                     NewFileLineCount: 8,
                     ChangedLines: []model.ChangedLine{
                         {
-                            Content:    "public Mono<GoodsReceipt> getByEonOrderNumber(String eonOrderNumber) {",
+                            Content:    "public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {",
                             IsDeletion: true,
                         },
                         {
@@ -101,7 +101,7 @@ model.GitDiff{
                             IsDeletion: true,
                         },
                         {
-                            Content:    ".findByEonOrderNumber(eonOrderNumber)",
+                            Content:    ".findByOrderNumber(OrderNumber)",
                             IsDeletion: true,
                         },
                         {

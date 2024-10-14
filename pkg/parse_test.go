@@ -7,17 +7,17 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	gitDiff := `diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+	gitDiff := `diff --git a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 index 50e23fd0..2b304ea7 100644
---- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
-+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+--- a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
++++ b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 @@ -10,6 +10,7 @@ import lombok.Data;
  @Data
  @Builder
  public class GoodsReceiptDto {
 +  private Long goodsReceiptId;
    private String internalOrderNumber;
-   private String eonOrderNumber;
+   private String OrderNumber;
    private String deliveryNoteNumber;
 @@ -26,6 +27,7 @@ public class GoodsReceiptDto {
     */
@@ -25,19 +25,19 @@ index 50e23fd0..2b304ea7 100644
      return GoodsReceiptDto.builder()
 +        .goodsReceiptId(goodsReceipt.getId())
          .internalOrderNumber(goodsReceipt.getInternalOrderNumber())
-         .eonOrderNumber(goodsReceipt.getEonOrderNumber())
+         .OrderNumber(goodsReceipt.getOrderNumber())
          .deliveryNoteNumber(goodsReceipt.getDeliveryNoteNumber())
-diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
+diff --git a/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java b/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
 index 13ef59a7..d0c03386 100644
---- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
-+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
+--- a/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
++++ b/src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java
 @@ -45,10 +45,8 @@ public class GoodsReceiptPersistenceAdapter implements GoodsReceiptPersistencePo
    }
  
    @Override
--  public Mono<GoodsReceipt> getByEonOrderNumber(String eonOrderNumber) {
+-  public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {
 -    return goodsReceiptRepository
--        .findByEonOrderNumber(eonOrderNumber)
+-        .findByOrderNumber(OrderNumber)
 -        .map(GoodsReceiptEntity::mapToDomain);
 +  public Mono<GoodsReceipt> getByGoodsReceiptId(Long goodsReceiptId) {
 +    return goodsReceiptRepository.findById(goodsReceiptId).map(GoodsReceiptEntity::mapToDomain);
@@ -48,8 +48,8 @@ index 13ef59a7..d0c03386 100644
 	expected := model.GitDiff{
 		FileDiffs: []model.FileDiff{
 			{
-				OldFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
-				NewFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
+				OldFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
+				NewFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
 				Hunks: []model.Hunk{
 					{
 						HunkOperation:    model.ADD,
@@ -80,8 +80,8 @@ index 13ef59a7..d0c03386 100644
 				},
 			},
 			{
-				OldFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
-				NewFilename: "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
+				OldFilename: "src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
+				NewFilename: "src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
 				Hunks: []model.Hunk{
 					{
 						HunkOperation:    model.MODIFY,
@@ -91,7 +91,7 @@ index 13ef59a7..d0c03386 100644
 						NewFileLineCount: 8,
 						ChangedLines: []model.ChangedLine{
 							{
-								Content:    "public Mono<GoodsReceipt> getByEonOrderNumber(String eonOrderNumber) {",
+								Content:    "public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {",
 								IsDeletion: true,
 							},
 							{
@@ -99,7 +99,7 @@ index 13ef59a7..d0c03386 100644
 								IsDeletion: true,
 							},
 							{
-								Content:    ".findByEonOrderNumber(eonOrderNumber)",
+								Content:    ".findByOrderNumber(OrderNumber)",
 								IsDeletion: true,
 							},
 							{
@@ -127,17 +127,17 @@ index 13ef59a7..d0c03386 100644
 }
 
 func TestExtractOldFileName(t *testing.T) {
-	input := `diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+	input := `diff --git a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 	index 50e23fd0..2b304ea7 100644
-	--- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
-	+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto2.java
+	--- a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+	+++ b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto2.java
 	@@ -10,6 +10,7 @@ import lombok.Data;
 	@Data
 	@Builder
 	public class GoodsReceiptDto {
 		+  private Long goodsReceiptId;
 		private String internalOrderNumber;
-		private String eonOrderNumber;
+		private String OrderNumber;
 		private String deliveryNoteNumber;
 		@@ -26,6 +27,7 @@ public class GoodsReceiptDto {
 		*/
@@ -145,11 +145,11 @@ func TestExtractOldFileName(t *testing.T) {
 		return GoodsReceiptDto.builder()
 		+        .goodsReceiptId(goodsReceipt.getId())
 		.internalOrderNumber(goodsReceipt.getInternalOrderNumber())
-		.eonOrderNumber(goodsReceipt.getEonOrderNumber())
+		.OrderNumber(goodsReceipt.getOrderNumber())
 		.deliveryNoteNumber(goodsReceipt.getDeliveryNoteNumber())`
 
 	result := extractOldFilename(input)
-	expected := "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java"
+	expected := "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java"
 
 	if result != expected {
 		t.Errorf("Expected result and expected to be equal, but they are not. result: %s, expected: %s", result, expected)
@@ -157,17 +157,17 @@ func TestExtractOldFileName(t *testing.T) {
 }
 
 func TestExtractNewFileName(t *testing.T) {
-	input := `diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+	input := `diff --git a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 	index 50e23fd0..2b304ea7 100644
-	--- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
-	+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto2.java
+	--- a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+	+++ b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto2.java
 	@@ -10,6 +10,7 @@ import lombok.Data;
 	@Data
 	@Builder
 	public class GoodsReceiptDto {
 		+  private Long goodsReceiptId;
 		private String internalOrderNumber;
-		private String eonOrderNumber;
+		private String OrderNumber;
 		private String deliveryNoteNumber;
 		@@ -26,6 +27,7 @@ public class GoodsReceiptDto {
 		*/
@@ -175,11 +175,11 @@ func TestExtractNewFileName(t *testing.T) {
 		return GoodsReceiptDto.builder()
 		+        .goodsReceiptId(goodsReceipt.getId())
 		.internalOrderNumber(goodsReceipt.getInternalOrderNumber())
-		.eonOrderNumber(goodsReceipt.getEonOrderNumber())
+		.OrderNumber(goodsReceipt.getOrderNumber())
 		.deliveryNoteNumber(goodsReceipt.getDeliveryNoteNumber())`
 
 	result := extractNewFilename(input)
-	expected := "src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto2.java"
+	expected := "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto2.java"
 
 	if result != expected {
 		t.Errorf("Expected result and expected to be equal, but they are not. result: %s, expected: %s", result, expected)
@@ -191,9 +191,9 @@ func TestExtractChangedLines(t *testing.T) {
    }
  
    @Override
--  public Mono<GoodsReceipt> getByEonOrderNumber(String eonOrderNumber) {
+-  public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {
 -    return goodsReceiptRepository
--        .findByEonOrderNumber(eonOrderNumber)
+-        .findByOrderNumber(OrderNumber)
 -        .map(GoodsReceiptEntity::mapToDomain);
 +  public Mono<GoodsReceipt> getByGoodsReceiptId(Long goodsReceiptId) {
 +    return goodsReceiptRepository.findById(goodsReceiptId).map(GoodsReceiptEntity::mapToDomain);
@@ -203,7 +203,7 @@ func TestExtractChangedLines(t *testing.T) {
 
 	expected := []model.ChangedLine{
 		{
-			Content:    "public Mono<GoodsReceipt> getByEonOrderNumber(String eonOrderNumber) {",
+			Content:    "public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {",
 			IsDeletion: true,
 		},
 		{
@@ -211,7 +211,7 @@ func TestExtractChangedLines(t *testing.T) {
 			IsDeletion: true,
 		},
 		{
-			Content:    ".findByEonOrderNumber(eonOrderNumber)",
+			Content:    ".findByOrderNumber(OrderNumber)",
 			IsDeletion: true,
 		},
 		{
@@ -234,17 +234,17 @@ func TestExtractChangedLines(t *testing.T) {
 }
 
 func TestExtractHunks(t *testing.T) {
-	input := `diff --git a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+	input := `diff --git a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 index 50e23fd0..2b304ea7 100644
---- a/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
-+++ b/src/main/java/com/eon/smexnet/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
+--- a/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
++++ b/src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java
 @@ -10,6 +10,7 @@ import lombok.Data;
  @Data
  @Builder
  public class GoodsReceiptDto {
 +  private Long goodsReceiptId;
    private String internalOrderNumber;
-   private String eonOrderNumber;
+   private String OrderNumber;
    private String deliveryNoteNumber;
 @@ -26,6 +27,7 @@ public class GoodsReceiptDto {
     */
@@ -252,7 +252,7 @@ index 50e23fd0..2b304ea7 100644
      return GoodsReceiptDto.builder()
 +        .goodsReceiptId(goodsReceipt.getId())
          .internalOrderNumber(goodsReceipt.getInternalOrderNumber())
-         .eonOrderNumber(goodsReceipt.getEonOrderNumber())
+         .OrderNumber(goodsReceipt.getOrderNumber())
          .deliveryNoteNumber(goodsReceipt.getDeliveryNoteNumber())`
 
 	result := extractHunks(input)
