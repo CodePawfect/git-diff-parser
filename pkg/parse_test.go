@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github/codepawfect/git-diff-parser/pkg/model"
+	"github.com/codepawfect/git-diff-parser/pkg/model"
 	"reflect"
 	"testing"
 )
@@ -43,7 +43,7 @@ index 13ef59a7..d0c03386 100644
 +    return goodsReceiptRepository.findById(goodsReceiptId).map(GoodsReceiptEntity::mapToDomain);
    }`
 
-	result := parse(gitDiff)
+	result := Parse(gitDiff)
 
 	expected := model.GitDiff{
 		FileDiffs: []model.FileDiff{
