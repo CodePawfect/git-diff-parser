@@ -44,59 +44,59 @@ func Parse(gitDiff string) (GitDiff, error) {
 	fileDiffsRaw := strings.Split(gitDiff, "diff --git")
 	fileDiffsRaw = fileDiffsRaw[1:]
 
-	var fileDiffs []FileDiff
+	var fd []FileDiff
 	for _, fileDiffRaw := range fileDiffsRaw {
-		hunks, err := extractHunks(fileDiffRaw)
+		h, err := extractHunks(fileDiffRaw)
 		if err != nil {
-			return GitDiff{}, fmt.Errorf("failed to extract hunks: %w", err)
+			return GitDiff{}, fmt.Errorf("failed to extract h: %w", err)
 		}
 
 		fileDiff := FileDiff{
 			OldFilename: extractOldFilename(fileDiffRaw),
 			NewFilename: extractNewFilename(fileDiffRaw),
-			Hunks:       hunks,
+			Hunks:       h,
 		}
 
-		fileDiffs = append(fileDiffs, fileDiff)
+		fd = append(fd, fileDiff)
 	}
 
 	return GitDiff{
-		FileDiffs: fileDiffs,
+		FileDiffs: fd,
 	}, nil
 }
 
 func extractOldFilename(str string) string {
-	startIndex := strings.Index(str, "--- a/")
-	startIndex += len("--- a/")
+	i := strings.Index(str, "--- a/")
+	i += len("--- a/")
 
-	if startIndex == -1 {
+	if i == -1 {
 		return ""
 	}
 
-	endIndex := strings.Index(str[startIndex:], "\n")
+	j := strings.Index(str[i:], "\n")
 
-	if endIndex == -1 {
+	if j == -1 {
 		return ""
 	}
 
-	return str[startIndex : endIndex+startIndex]
+	return str[i : j+i]
 }
 
 func extractNewFilename(str string) string {
-	startIndex := strings.Index(str, "+++ b/")
-	startIndex += len("+++ b/")
+	i := strings.Index(str, "+++ b/")
+	i += len("+++ b/")
 
-	if startIndex == -1 {
+	if i == -1 {
 		return ""
 	}
 
-	endIndex := strings.Index(str[startIndex:], "\n")
+	j := strings.Index(str[i:], "\n")
 
-	if endIndex == -1 {
+	if j == -1 {
 		return ""
 	}
 
-	return str[startIndex : endIndex+startIndex]
+	return str[i : j+i]
 }
 
 var hunkHeaderRegex = regexp.MustCompile(`(?m)^\s*@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
@@ -130,29 +130,29 @@ func extractHunks(str string) ([]Hunk, error) {
 			hunkContent = str[matches[i][0]:len(str)]
 		}
 
-		changedLines := extractChangedLines(hunkContent)
-		hunkOperation := determineHunkOperation(changedLines)
+		cl := extractChangedLines(hunkContent)
+		ho := determineHunkOperation(cl)
 
-		hunk := Hunk{
-			HunkOperation:    hunkOperation,
+		h := Hunk{
+			HunkOperation:    ho,
 			OldFileLineStart: oldLineStart,
 			OldFileLineCount: oldLineCount,
 			NewFileLineStart: newLineStart,
 			NewFileLineCount: newLineCount,
-			ChangedLines:     changedLines,
+			ChangedLines:     cl,
 		}
-		hunks = append(hunks, hunk)
+		hunks = append(hunks, h)
 	}
 
 	return hunks, nil
 }
 
-func determineHunkOperation(changedLines []ChangedLine) HunkOperation {
+func determineHunkOperation(cl []ChangedLine) HunkOperation {
 	hasAdditions := false
 	hasDeletions := false
 
-	for _, line := range changedLines {
-		if line.IsDeletion {
+	for _, l := range cl {
+		if l.IsDeletion {
 			hasDeletions = true
 		} else {
 			hasAdditions = true
@@ -174,29 +174,29 @@ func determineHunkOperation(changedLines []ChangedLine) HunkOperation {
 }
 
 func extractChangedLines(str string) []ChangedLine {
-	var changedLines []ChangedLine
-	scanner := bufio.NewScanner(strings.NewReader(str))
+	var cls []ChangedLine
+	s := bufio.NewScanner(strings.NewReader(str))
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	for s.Scan() {
+		l := s.Text()
 
-		if !strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "-") {
+		if !strings.HasPrefix(l, "+") && !strings.HasPrefix(l, "-") {
 			continue
 		}
-		if strings.HasPrefix(line, "+") {
-			changedLine := ChangedLine{
+		if strings.HasPrefix(l, "+") {
+			cl := ChangedLine{
 				IsDeletion: false,
-				Content:    strings.TrimSpace(line[1:]),
+				Content:    strings.TrimSpace(l[1:]),
 			}
-			changedLines = append(changedLines, changedLine)
+			cls = append(cls, cl)
 		} else {
-			changedLine := ChangedLine{
+			cl := ChangedLine{
 				IsDeletion: true,
-				Content:    strings.TrimSpace(line[1:]),
+				Content:    strings.TrimSpace(l[1:]),
 			}
-			changedLines = append(changedLines, changedLine)
+			cls = append(cls, cl)
 		}
 	}
 
-	return changedLines
+	return cls
 }
