@@ -1,7 +1,6 @@
-package parse
+package git_diff_parser
 
 import (
-	"github.com/codepawfect/git-diff-parser/pkg/model"
 	"reflect"
 	"testing"
 )
@@ -49,19 +48,19 @@ index 13ef59a7..d0c03386 100644
 		t.Fatalf("Parse returned an error: %v", err)
 	}
 
-	expected := model.GitDiff{
-		FileDiffs: []model.FileDiff{
+	expected := GitDiff{
+		FileDiffs: []FileDiff{
 			{
 				OldFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
 				NewFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",
-				Hunks: []model.Hunk{
+				Hunks: []Hunk{
 					{
-						HunkOperation:    model.ADD,
+						HunkOperation:    ADD,
 						OldFileLineStart: 10,
 						OldFileLineCount: 6,
 						NewFileLineStart: 10,
 						NewFileLineCount: 7,
-						ChangedLines: []model.ChangedLine{
+						ChangedLines: []ChangedLine{
 							{
 								Content:    "private Long goodsReceiptId;",
 								IsDeletion: false,
@@ -69,12 +68,12 @@ index 13ef59a7..d0c03386 100644
 						},
 					},
 					{
-						HunkOperation:    model.ADD,
+						HunkOperation:    ADD,
 						OldFileLineStart: 26,
 						OldFileLineCount: 6,
 						NewFileLineStart: 27,
 						NewFileLineCount: 7,
-						ChangedLines: []model.ChangedLine{
+						ChangedLines: []ChangedLine{
 							{
 								Content:    ".goodsReceiptId(goodsReceipt.getId())",
 								IsDeletion: false,
@@ -86,14 +85,14 @@ index 13ef59a7..d0c03386 100644
 			{
 				OldFilename: "src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
 				NewFilename: "src/main/java/com/hexagon/adapter/logistic/out/persistence/GoodsReceiptPersistenceAdapter.java",
-				Hunks: []model.Hunk{
+				Hunks: []Hunk{
 					{
-						HunkOperation:    model.MODIFY,
+						HunkOperation:    MODIFY,
 						OldFileLineStart: 45,
 						OldFileLineCount: 10,
 						NewFileLineStart: 45,
 						NewFileLineCount: 8,
-						ChangedLines: []model.ChangedLine{
+						ChangedLines: []ChangedLine{
 							{
 								Content:    "public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {",
 								IsDeletion: true,
@@ -205,7 +204,7 @@ func TestExtractChangedLines(t *testing.T) {
 
 	result := extractChangedLines(input)
 
-	expected := []model.ChangedLine{
+	expected := []ChangedLine{
 		{
 			Content:    "public Mono<GoodsReceipt> getByOrderNumber(String OrderNumber) {",
 			IsDeletion: true,
@@ -265,14 +264,14 @@ index 50e23fd0..2b304ea7 100644
 		t.Fatalf("extract hunks returned an error: %v", err)
 	}
 
-	expected := []model.Hunk{
+	expected := []Hunk{
 		{
-			HunkOperation:    model.ADD,
+			HunkOperation:    ADD,
 			OldFileLineStart: 10,
 			OldFileLineCount: 6,
 			NewFileLineStart: 10,
 			NewFileLineCount: 7,
-			ChangedLines: []model.ChangedLine{
+			ChangedLines: []ChangedLine{
 				{
 					Content:    "private Long goodsReceiptId;",
 					IsDeletion: false,
@@ -280,12 +279,12 @@ index 50e23fd0..2b304ea7 100644
 			},
 		},
 		{
-			HunkOperation:    model.ADD,
+			HunkOperation:    ADD,
 			OldFileLineStart: 26,
 			OldFileLineCount: 6,
 			NewFileLineStart: 27,
 			NewFileLineCount: 7,
-			ChangedLines: []model.ChangedLine{
+			ChangedLines: []ChangedLine{
 				{
 					Content:    ".goodsReceiptId(goodsReceipt.getId())",
 					IsDeletion: false,

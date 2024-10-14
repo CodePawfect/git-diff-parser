@@ -1,26 +1,57 @@
-package parse
+package git_diff_parser
 
 import (
 	"bufio"
 	"fmt"
-	"github.com/codepawfect/git-diff-parser/pkg/model"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-func Parse(gitDiff string) (model.GitDiff, error) {
+type HunkOperation string
+
+const (
+	ADD    = "add"
+	DELETE = "delete"
+	MODIFY = "modify"
+)
+
+type GitDiff struct {
+	FileDiffs []FileDiff
+}
+
+type FileDiff struct {
+	OldFilename string
+	NewFilename string
+	Hunks       []Hunk
+}
+
+type Hunk struct {
+	HunkOperation    HunkOperation
+	OldFileLineStart int
+	OldFileLineCount int
+	NewFileLineStart int
+	NewFileLineCount int
+	ChangedLines     []ChangedLine
+}
+
+type ChangedLine struct {
+	Content    string
+	IsDeletion bool
+}
+
+func Parse(gitDiff string) (GitDiff, error) {
 	fileDiffsRaw := strings.Split(gitDiff, "diff --git")
 	fileDiffsRaw = fileDiffsRaw[1:]
 
-	var fileDiffs []model.FileDiff
+	var fileDiffs []FileDiff
 	for _, fileDiffRaw := range fileDiffsRaw {
 		hunks, err := extractHunks(fileDiffRaw)
 		if err != nil {
-			return model.GitDiff{}, fmt.Errorf("failed to extract hunks: %w", err)
+			return GitDiff{}, fmt.Errorf("failed to extract hunks: %w", err)
 		}
 
-		fileDiff := model.FileDiff{
+		fileDiff := FileDiff{
 			OldFilename: extractOldFilename(fileDiffRaw),
 			NewFilename: extractNewFilename(fileDiffRaw),
 			Hunks:       hunks,
@@ -29,7 +60,7 @@ func Parse(gitDiff string) (model.GitDiff, error) {
 		fileDiffs = append(fileDiffs, fileDiff)
 	}
 
-	return model.GitDiff{
+	return GitDiff{
 		FileDiffs: fileDiffs,
 	}, nil
 }
@@ -68,10 +99,10 @@ func extractNewFilename(str string) string {
 	return str[startIndex : endIndex+startIndex]
 }
 
-func extractHunks(str string) ([]model.Hunk, error) {
-	var hunks []model.Hunk
-	hunkHeaderRegex := regexp.MustCompile(`(?m)^\s*@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
-	//hunkHeaderRegex := regexp.MustCompile(`(?m)^@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
+var hunkHeaderRegex = regexp.MustCompile(`(?m)^\s*@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
+
+func extractHunks(str string) ([]Hunk, error) {
+	var hunks []Hunk
 	matches := hunkHeaderRegex.FindAllStringSubmatchIndex(str, -1)
 
 	for i := 0; i < len(matches); i++ {
@@ -102,7 +133,7 @@ func extractHunks(str string) ([]model.Hunk, error) {
 		changedLines := extractChangedLines(hunkContent)
 		hunkOperation := determineHunkOperation(changedLines)
 
-		hunk := model.Hunk{
+		hunk := Hunk{
 			HunkOperation:    hunkOperation,
 			OldFileLineStart: oldLineStart,
 			OldFileLineCount: oldLineCount,
@@ -116,7 +147,7 @@ func extractHunks(str string) ([]model.Hunk, error) {
 	return hunks, nil
 }
 
-func determineHunkOperation(changedLines []model.ChangedLine) model.HunkOperation {
+func determineHunkOperation(changedLines []ChangedLine) HunkOperation {
 	hasAdditions := false
 	hasDeletions := false
 
@@ -128,22 +159,22 @@ func determineHunkOperation(changedLines []model.ChangedLine) model.HunkOperatio
 		}
 
 		if hasAdditions && hasDeletions {
-			return model.MODIFY
+			return MODIFY
 		}
 	}
 
 	if hasAdditions {
-		return model.ADD
+		return ADD
 	}
 	if hasDeletions {
-		return model.DELETE
+		return DELETE
 	}
 
-	return model.MODIFY
+	return MODIFY
 }
 
-func extractChangedLines(str string) []model.ChangedLine {
-	var changedLines []model.ChangedLine
+func extractChangedLines(str string) []ChangedLine {
+	var changedLines []ChangedLine
 	scanner := bufio.NewScanner(strings.NewReader(str))
 
 	for scanner.Scan() {
@@ -153,13 +184,13 @@ func extractChangedLines(str string) []model.ChangedLine {
 			continue
 		}
 		if strings.HasPrefix(line, "+") {
-			changedLine := model.ChangedLine{
+			changedLine := ChangedLine{
 				IsDeletion: false,
 				Content:    strings.TrimSpace(line[1:]),
 			}
 			changedLines = append(changedLines, changedLine)
 		} else {
-			changedLine := model.ChangedLine{
+			changedLine := ChangedLine{
 				IsDeletion: true,
 				Content:    strings.TrimSpace(line[1:]),
 			}
