@@ -47,7 +47,7 @@ index 13ef59a7..d0c03386 100644
 ### Output: Parsed GitDiff Struct
 
 ```go
-model.GitDiff{
+diffparser.GitDiff{
     FileDiffs: []model.FileDiff{
         {
             OldFilename: "src/main/java/com/hexagon/adapter/logistic/in/rest/model/GoodsReceiptDto.java",

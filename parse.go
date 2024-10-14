@@ -1,4 +1,4 @@
-package git_diff_parser
+package diffparser
 
 import (
 	"bufio"
