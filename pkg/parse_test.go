@@ -43,7 +43,11 @@ index 13ef59a7..d0c03386 100644
 +    return goodsReceiptRepository.findById(goodsReceiptId).map(GoodsReceiptEntity::mapToDomain);
    }`
 
-	result := Parse(gitDiff)
+	result, err := Parse(gitDiff)
+
+	if err != nil {
+		t.Fatalf("Parse returned an error: %v", err)
+	}
 
 	expected := model.GitDiff{
 		FileDiffs: []model.FileDiff{
@@ -255,7 +259,11 @@ index 50e23fd0..2b304ea7 100644
          .OrderNumber(goodsReceipt.getOrderNumber())
          .deliveryNoteNumber(goodsReceipt.getDeliveryNoteNumber())`
 
-	result := extractHunks(input)
+	result, err := extractHunks(input)
+
+	if err != nil {
+		t.Fatalf("extract hunks returned an error: %v", err)
+	}
 
 	expected := []model.Hunk{
 		{

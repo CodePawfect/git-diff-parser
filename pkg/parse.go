@@ -2,29 +2,36 @@ package parse
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/codepawfect/git-diff-parser/pkg/model"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-func Parse(gitDiff string) model.GitDiff {
+func Parse(gitDiff string) (model.GitDiff, error) {
 	fileDiffsRaw := strings.Split(gitDiff, "diff --git")
 	fileDiffsRaw = fileDiffsRaw[1:]
 
 	var fileDiffs []model.FileDiff
 	for _, fileDiffRaw := range fileDiffsRaw {
+		hunks, err := extractHunks(fileDiffRaw)
+		if err != nil {
+			return model.GitDiff{}, fmt.Errorf("failed to extract hunks: %w", err)
+		}
+
 		fileDiff := model.FileDiff{
 			OldFilename: extractOldFilename(fileDiffRaw),
 			NewFilename: extractNewFilename(fileDiffRaw),
-			Hunks:       extractHunks(fileDiffRaw),
+			Hunks:       hunks,
 		}
+
 		fileDiffs = append(fileDiffs, fileDiff)
 	}
 
 	return model.GitDiff{
 		FileDiffs: fileDiffs,
-	}
+	}, nil
 }
 
 func extractOldFilename(str string) string {
@@ -61,17 +68,29 @@ func extractNewFilename(str string) string {
 	return str[startIndex : endIndex+startIndex]
 }
 
-func extractHunks(str string) []model.Hunk {
+func extractHunks(str string) ([]model.Hunk, error) {
 	var hunks []model.Hunk
 	hunkHeaderRegex := regexp.MustCompile(`(?m)^\s*@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
 	//hunkHeaderRegex := regexp.MustCompile(`(?m)^@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
 	matches := hunkHeaderRegex.FindAllStringSubmatchIndex(str, -1)
 
 	for i := 0; i < len(matches); i++ {
-		oldLineStart, _ := strconv.Atoi(str[matches[i][2]:matches[i][3]])
-		oldLineCount, _ := strconv.Atoi(str[matches[i][4]:matches[i][5]])
-		newLineStart, _ := strconv.Atoi(str[matches[i][6]:matches[i][7]])
-		newLineCount, _ := strconv.Atoi(str[matches[i][8]:matches[i][9]])
+		oldLineStart, err := strconv.Atoi(str[matches[i][2]:matches[i][3]])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse old line start: %w", err)
+		}
+		oldLineCount, err := strconv.Atoi(str[matches[i][4]:matches[i][5]])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse old line count: %w", err)
+		}
+		newLineStart, err := strconv.Atoi(str[matches[i][6]:matches[i][7]])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse new line start: %w", err)
+		}
+		newLineCount, err := strconv.Atoi(str[matches[i][8]:matches[i][9]])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse new line count: %w", err)
+		}
 
 		var hunkContent string
 		if i+1 < len(matches) {
@@ -94,7 +113,7 @@ func extractHunks(str string) []model.Hunk {
 		hunks = append(hunks, hunk)
 	}
 
-	return hunks
+	return hunks, nil
 }
 
 func determineHunkOperation(changedLines []model.ChangedLine) model.HunkOperation {
