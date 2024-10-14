@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func parse(gitDiff string) model.GitDiff {
+func Parse(gitDiff string) model.GitDiff {
 	fileDiffsRaw := strings.Split(gitDiff, "diff --git")
 	fileDiffsRaw = fileDiffsRaw[1:]
 
