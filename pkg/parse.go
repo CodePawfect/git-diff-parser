@@ -119,22 +119,27 @@ func extractHunks(str string) ([]model.Hunk, error) {
 func determineHunkOperation(changedLines []model.ChangedLine) model.HunkOperation {
 	hasAdditions := false
 	hasDeletions := false
+
 	for _, line := range changedLines {
 		if line.IsDeletion {
 			hasDeletions = true
 		} else {
 			hasAdditions = true
 		}
+
+		if hasAdditions && hasDeletions {
+			return model.MODIFY
+		}
 	}
-	if hasAdditions && hasDeletions {
-		return model.MODIFY
-	} else if hasAdditions {
+
+	if hasAdditions {
 		return model.ADD
-	} else if hasDeletions {
-		return model.DELETE
-	} else {
-		return model.MODIFY
 	}
+	if hasDeletions {
+		return model.DELETE
+	}
+
+	return model.MODIFY
 }
 
 func extractChangedLines(str string) []model.ChangedLine {
