@@ -1,1 +1,1 @@
-module git-diff-parser
+module github/codepawfect/git-diff-parser
