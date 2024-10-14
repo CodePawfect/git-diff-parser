@@ -40,20 +40,27 @@ type ChangedLine struct {
 	IsDeletion bool
 }
 
-func Parse(gitDiff string) (GitDiff, error) {
-	fileDiffsRaw := strings.Split(gitDiff, "diff --git")
-	fileDiffsRaw = fileDiffsRaw[1:]
+// Parse parses string with git diffs to a GitDiff struct.
+//
+// Parameters:
+// - str: the input string containing the git diffs.
+//
+// Returns:
+// - GitDiff struct or error if an error occurs
+func Parse(str string) (GitDiff, error) {
+	diffGits := strings.Split(str, "diff --git")
+	diffGits = diffGits[1:]
 
 	var fd []FileDiff
-	for _, fileDiffRaw := range fileDiffsRaw {
-		h, err := extractHunks(fileDiffRaw)
+	for _, diffGit := range diffGits {
+		h, err := extractHunks(diffGit)
 		if err != nil {
 			return GitDiff{}, fmt.Errorf("failed to extract h: %w", err)
 		}
 
 		fileDiff := FileDiff{
-			OldFilename: extractOldFilename(fileDiffRaw),
-			NewFilename: extractNewFilename(fileDiffRaw),
+			OldFilename: extractOldFilename(diffGit),
+			NewFilename: extractNewFilename(diffGit),
 			Hunks:       h,
 		}
 
@@ -65,6 +72,13 @@ func Parse(gitDiff string) (GitDiff, error) {
 	}, nil
 }
 
+// extractOldFilename extracts the old file name from the diff string.
+//
+// Parameters:
+// - str: the input string containing the git diff.
+//
+// Returns:
+// - The old file name if found, otherwise an empty string.
 func extractOldFilename(str string) string {
 	i := strings.Index(str, "--- a/")
 	i += len("--- a/")
@@ -82,6 +96,13 @@ func extractOldFilename(str string) string {
 	return str[i : j+i]
 }
 
+// extractNewFilename extracts the new file name from the diff string.
+//
+// Parameters:
+// - str: the input string containing the git diff.
+//
+// Returns:
+// - The new file name if found, otherwise an empty string.
 func extractNewFilename(str string) string {
 	i := strings.Index(str, "+++ b/")
 	i += len("+++ b/")
@@ -101,6 +122,13 @@ func extractNewFilename(str string) string {
 
 var hunkHeaderRegex = regexp.MustCompile(`(?m)^\s*@@ -(\d+),(\d+) \+(\d+),(\d+) @@`)
 
+// extractHunks extracts hunks from the diff --git string.
+//
+// Parameters:
+// - str: the input string containing the git diff.
+//
+// Returns:
+// - The hunks from the git diff or error if hunk header parsing fails
 func extractHunks(str string) ([]Hunk, error) {
 	var hunks []Hunk
 	matches := hunkHeaderRegex.FindAllStringSubmatchIndex(str, -1)
@@ -147,6 +175,13 @@ func extractHunks(str string) ([]Hunk, error) {
 	return hunks, nil
 }
 
+// determineHunkOperation determines the operation type of the hunk.
+//
+// Parameters:
+// - cl: changed lines from the hunk.
+//
+// Returns:
+// - HunkOperation type.
 func determineHunkOperation(cl []ChangedLine) HunkOperation {
 	hasAdditions := false
 	hasDeletions := false
@@ -173,6 +208,13 @@ func determineHunkOperation(cl []ChangedLine) HunkOperation {
 	return MODIFY
 }
 
+// extractChangedLines extract additions and deletions from hunk.
+//
+// Parameters:
+// - str: hunk as string.
+//
+// Returns:
+// - []ChangedLine changed lines in the hunk.
 func extractChangedLines(str string) []ChangedLine {
 	var cls []ChangedLine
 	s := bufio.NewScanner(strings.NewReader(str))
