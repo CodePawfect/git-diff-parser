@@ -1,5 +1,5 @@
 # git diff parser
-A lightweight Go library for parsing Git diffs into structured, easy-to-process data, enabling developers to programmatically analyze and manipulate file changes with minimal effort.
+A lightweight Go library for parsing Git diffs into structured, easy-to-process data, enabling developers to programmatically analyze file changes and work further with the struct.
 
 ## Example
 Demonstration how a `GitDiff` struct might look after parsing a git diff.
