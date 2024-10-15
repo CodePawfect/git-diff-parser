@@ -52,8 +52,9 @@ func Parse(str string) (GitDiff, error) {
 	diffGits := strings.Split(str, "diff --git")
 	diffGits = diffGits[1:]
 
-	var fd []FileDiff
-	for _, diffGit := range diffGits {
+	fd := make([]FileDiff, len(diffGits))
+
+	for i, diffGit := range diffGits {
 		h, err := extractHunks(diffGit)
 		if err != nil {
 			return GitDiff{}, fmt.Errorf("failed to extract h: %w", err)
@@ -65,7 +66,7 @@ func Parse(str string) (GitDiff, error) {
 			Hunks:       h,
 		}
 
-		fd = append(fd, fileDiff)
+		fd[i] = fileDiff
 	}
 
 	return GitDiff{
